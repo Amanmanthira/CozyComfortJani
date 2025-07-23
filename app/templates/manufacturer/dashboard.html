@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manufacturer Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background-color: #f4f6f9;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #111827;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #10b981;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #9ca3af;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+      display: block;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #10b981;
+      color: white;
+    }
+
+    .main {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #111827;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #10b981;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    tr:hover {
+      background-color: #f3f4f6;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+
+      .sidebar h2 {
+        display: none;
+      }
+
+      .main {
+        padding: 20px;
+      }
+
+      form {
+        flex-direction: column;
+      }
+
+      form input,
+      form button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+   <div class="sidebar">
+    <h2>🧵 Manufacturer</h2>
+    <a class="nav-link active" onclick="showSection('dashboard')">📊 Dashboard</a>
+    <a class="nav-link" onclick="showSection('addBlanket')">➕ Add Blanket</a>
+    <a class="nav-link" onclick="showSection('itemsSection')">📦 Items</a>
+    <a class="nav-link" onclick="showSection('BlanketReqSec')">📨 Requested Blankets</a>
+</div>
+
+
+
+  <div class="main">
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section active">
+  <h2 style="font-size: 28px; margin-bottom: 30px; color: #111827;">✨ Manufacturer Dashboard</h2>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px;">
+
+  <!-- Total Blankets -->
+  <div style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 24px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.05); transition: transform 0.3s ease; text-align: center;">
+    <div style="font-size: 32px; margin-bottom: 12px;">🧺</div>
+    <h3 style="color: #065f46; font-size: 16px; font-weight: 600; margin-bottom: 6px;">Total Blankets</h3>
+    <p style="font-size: 32px; font-weight: bold; color: #064e3b;">{{ blankets|length }}</p>
+  </div>
+
+  <!-- Total Stock -->
+  <div style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 24px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.05); transition: transform 0.3s ease; text-align: center;">
+    <div style="font-size: 32px; margin-bottom: 12px;">📦</div>
+    <h3 style="color: #0369a1; font-size: 16px; font-weight: 600; margin-bottom: 6px;">Total Stock</h3>
+    <p style="font-size: 32px; font-weight: bold; color: #075985;">
+      {{ blankets | sum(attribute='manufacturer_stock') }}
+    </p>
+  </div>
+
+  <!-- Average Price -->
+  <div style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 24px; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.05); transition: transform 0.3s ease; text-align: center;">
+    <div style="font-size: 32px; margin-bottom: 12px;">💰</div>
+    <h3 style="color: #92400e; font-size: 16px; font-weight: 600; margin-bottom: 6px;">Average Price</h3>
+    <p style="font-size: 32px; font-weight: bold; color: #78350f;">
+      {{ (blankets | map(attribute='price') | sum) // (blankets|length) if blankets else 0 }}LKR
+    </p>
+  </div>
+
+  <!-- Charts Section -->
+<div style="margin-top: 40px;">
+  <h3 style="font-size: 27px; margin-bottom: 20px; color: #111827;">📊 Inventory Visual Insights</h3>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px;">
+    
+    <!-- Bar Chart -->
+    <div style="flex: 1; min-width: 30px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+      <h4 style="margin-bottom: 10px; font-size: 16px; color: #111827;">Stock per Blanket</h4>
+      <canvas id="stockChart" height="200"></canvas>
+    </div>
+
+    <!-- Line Chart -->
+    <div style="flex: 1; min-width: 30px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+      <h4 style="margin-bottom: 10px; font-size: 16px; color: #111827;">Blanket Price Trend</h4>
+      <canvas id="priceChart" height="200"></canvas>
+    </div>
+
+    <!-- Doughnut Chart -->
+    <div style="flex: 1; min-width: 30px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+      <h4 style="margin-bottom: 10px; font-size: 16px; color: #111827;">Stock Share</h4>
+      <canvas id="stockPieChart" height="200"></canvas>
+    </div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+<div id="itemsSection" class="section">
+  <h2 style="font-size: 28px; margin-bottom: 24px; color: #111827;">📦 My Inventory</h2>
+
+  <div style="overflow-x: auto; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); padding: 24px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0 12px;">
+      <thead>
+        <tr style="background-color: #10b981; color: white; border-radius: 8px;">
+          <th style="padding: 16px; text-align: left; border-top-left-radius: 10px;">Name</th>
+          <th style="padding: 16px; text-align: left;">Material</th>
+          <th style="padding: 16px; text-align: left;">Price</th>
+          <th style="padding: 16px; text-align: left; border-top-right-radius: 10px;">Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in blankets %}
+        <tr style="background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 8px;">
+          <td style="padding: 16px; border-top-left-radius: 10px; font-weight: 500; color: #1f2937;">{{ b.name }}</td>
+          <td style="padding: 16px; color: #6b7280;">{{ b.material }}</td>
+          <td style="padding: 16px; color: #065f46;">{{ b.price }}LKR</td>
+          <td style="padding: 16px; border-top-right-radius: 10px; font-weight: bold; color: #1e40af;">{{ b.manufacturer_stock }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<div id="BlanketReqSec" class="section">
+  <h2 style="margin-top: 40px; margin-bottom: 20px;">📩 Blanket Requests</h2>
+
+{% if blanket_requests %}
+<table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+  <thead>
+    <tr style="background-color: #10b981; color: white;">
+      <th style="padding: 12px; text-align: left;">Name</th>
+      <th style="padding: 12px; text-align: left;">Material</th>
+      <th style="padding: 12px; text-align: left;">Quantity</th>
+      <th style="padding: 12px; text-align: left;">Description</th>
+      <th style="padding: 12px; text-align: left;">Image</th>
+      <th style="padding: 12px; text-align: left;">Status</th>
+      <th style="padding: 12px; text-align: left;">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for req in blanket_requests %}
+    <tr>
+      <td>{{ req.name }}</td>
+      <td>{{ req.material }}</td>
+      <td>{{ req.quantity }}</td>
+      <td>{{ req.description }}</td>
+      <td>
+        {% if req.image %}
+          <img src="{{ url_for('static', filename=req.image.split('static/')[-1]) }}" alt="Image" style="width:80px; height:50px; object-fit:cover; border-radius:6px;">
+        {% else %}
+          No Image
+        {% endif %}
+      </td>
+      <td>{{ req.status }}</td>
+      <td>
+        {% if req.status != 'approved' %}
+        <form method="POST" action="{{ url_for('manufacturer.dashboard') }}">
+          <input type="hidden" name="request_id" value="{{ req.id }}">
+          <select name="status" required>
+            <option value="" disabled selected>Update Status</option>
+            <option value="approved">Approve</option>
+            <option value="rejected">Reject</option>
+          </select>
+          <button type="submit" style="margin-left: 8px; background:#10b981; color:white; border:none; border-radius:6px; padding:5px 10px; cursor:pointer;">Update</button>
+        </form>
+        {% else %}
+          Approved
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <p>No blanket requests yet.</p>
+{% endif %}
+
+</div>
+
+   <!-- Add Blanket Section -->
+<div id="addBlanket" class="section">
+  <h2 style="margin-bottom: 24px; font-size: 28px; color: #111827;">🧶 Add New Blanket</h2>
+
+  <div style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 36px; max-width: 500px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); margin-top: 20px;">
+    <form method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Blanket Name -->
+      <div style="position: relative;">
+        <label for="name" style="position: absolute; top: -10px; left: 16px; background: white; padding: 0 6px; font-size: 13px; color: #10b981; font-weight: 600;">Blanket Name</label>
+        <input id="name" name="name" placeholder="e.g. Cozy Comfort" required
+          style="width: 100%; padding: 16px; padding-top: 20px; border-radius: 12px; border: 1.5px solid #d1d5db; font-size: 16px; transition: 0.3s;"/>
+      </div>
+
+      <!-- Material -->
+      <div style="position: relative;">
+        <label for="material" style="position: absolute; top: -10px; left: 16px; background: white; padding: 0 6px; font-size: 13px; color: #10b981; font-weight: 600;">Material</label>
+        <input id="material" name="material" placeholder="e.g. Wool, Cotton" required
+          style="width: 100%; padding: 16px; padding-top: 20px; border-radius: 12px; border: 1.5px solid #d1d5db; font-size: 16px; transition: 0.3s;"/>
+      </div>
+
+      <!-- Price -->
+      <div style="position: relative;">
+        <label for="price" style="position: absolute; top: -10px; left: 16px; background: white; padding: 0 6px; font-size: 13px; color: #10b981; font-weight: 600;">Price ($)</label>
+        <input id="price" name="price" type="number" placeholder="e.g. 25.99" required
+          style="width: 100%; padding: 16px; padding-top: 20px; border-radius: 12px; border: 1.5px solid #d1d5db; font-size: 16px; transition: 0.3s;"/>
+      </div>
+
+      <!-- Stock -->
+      <div style="position: relative;">
+        <label for="stock" style="position: absolute; top: -10px; left: 16px; background: white; padding: 0 6px; font-size: 13px; color: #10b981; font-weight: 600;">Stock Quantity</label>
+        <input id="stock" name="stock" type="number" placeholder="e.g. 100" required
+          style="width: 100%; padding: 16px; padding-top: 20px; border-radius: 12px; border: 1.5px solid #d1d5db; font-size: 16px; transition: 0.3s;"/>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit"
+        style="padding: 16px; background: linear-gradient(to right, #10b981, #059669); color: white; border: none; font-size: 17px; font-weight: bold; border-radius: 12px; cursor: pointer; transition: background 0.3s ease, transform 0.2s;">
+        ➕ Add Blanket
+      </button>
+
+    </form>
+  </div>
+</div>
+
+  </div>
+
+  <script>
+    function showSection(id) {
+      const sections = document.querySelectorAll('.section');
+      const links = document.querySelectorAll('.nav-link');
+
+      sections.forEach(sec => sec.classList.remove('active'));
+      links.forEach(link => link.classList.remove('active'));
+
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+     const names = {{ blankets | map(attribute='name') | list | tojson }};
+  const prices = {{ blankets | map(attribute='price') | list | tojson }};
+  const stocks = {{ blankets | map(attribute='manufacturer_stock') | list | tojson }};
+
+  // Bar Chart
+  new Chart(document.getElementById("stockChart"), {
+    type: 'bar',
+    data: {
+      labels: names,
+      datasets: [{
+        label: 'Stock',
+        data: stocks,
+        backgroundColor: '#10b981',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // Line Chart
+  new Chart(document.getElementById("priceChart"), {
+    type: 'line',
+    data: {
+      labels: names,
+      datasets: [{
+        label: 'Price (LKR)',
+        data: prices,
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      }
+    }
+  });
+
+  // Doughnut Chart
+  new Chart(document.getElementById("stockPieChart"), {
+    type: 'doughnut',
+    data: {
+      labels: names,
+      datasets: [{
+        label: 'Stock Share',
+        data: stocks,
+        backgroundColor: [
+          '#10b981', '#3b82f6', '#facc15', '#ec4899', '#f97316',
+          '#8b5cf6', '#14b8a6', '#f87171', '#6366f1', '#22d3ee'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+  </script>
+</body>
+</html>

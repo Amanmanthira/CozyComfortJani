@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+*.DS_Store
+
+# Virtual Environment
+venv/
+env/
+ENV/
+flask_env/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# Flask-specific
+instance/
+*.db
+*.sqlite3
+*.log
+
+# Uploads (optional – ignore uploaded images but keep folder)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Environment and secrets
+.env
+config.py
+
+# Bytecode and cache
+*.egg-info/
+.eggs/
+build/
+dist/
+.cache/
+.mypy_cache/
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints/

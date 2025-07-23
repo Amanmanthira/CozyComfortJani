@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Seller Dashboard</title>
+</head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<body style="margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f6f9; display:flex; height:100vh;">
+
+    <!-- Sidebar -->
+<div style="width:250px; background:#111827; padding:30px 20px; color:white; display:flex; flex-direction:column; box-shadow: 4px 0 12px rgba(0,0,0,0.05);">
+  <h2 style="color:#10b981; text-align:center; margin-bottom:40px; font-size:24px; font-weight:700;">🛒 Seller</h2>
+
+  <a onclick="showSection('dashboard')" class="nav-link active"
+     style="display:block; color:#9ca3af; padding:12px 16px; margin-bottom:12px; border-radius:10px; text-decoration:none; cursor:pointer; transition: all 0.2s ease; font-weight:500;"
+     onmouseover="this.style.background='#1f2937'; this.style.color='#ffffff';"
+     onmouseout="this.style.background=''; this.style.color='#9ca3af';">
+     🧺 Dashboard
+  </a>
+
+  <a onclick="showSection('placeOrder')" class="nav-link"
+     style="display:block; color:#9ca3af; padding:12px 16px; margin-bottom:12px; border-radius:10px; text-decoration:none; cursor:pointer; transition: all 0.2s ease; font-weight:500;"
+     onmouseover="this.style.background='#1f2937'; this.style.color='#ffffff';"
+     onmouseout="this.style.background=''; this.style.color='#9ca3af';">
+     📝 Place Order
+  </a>
+
+  <a onclick="showSection('myOrders')" class="nav-link"
+     style="display:block; color:#9ca3af; padding:12px 16px; margin-bottom:12px; border-radius:10px; text-decoration:none; cursor:pointer; transition: all 0.2s ease; font-weight:500;"
+     onmouseover="this.style.background='#1f2937'; this.style.color='#ffffff';"
+     onmouseout="this.style.background=''; this.style.color='#9ca3af';">
+     📄 My Orders
+  </a>
+
+  <a onclick="showSection('approvedOrders')" class="nav-link"
+     style="display:block; color:#9ca3af; padding:12px 16px; margin-bottom:12px; border-radius:10px; text-decoration:none; cursor:pointer; transition: all 0.2s ease; font-weight:500;"
+     onmouseover="this.style.background='#1f2937'; this.style.color='#ffffff';"
+     onmouseout="this.style.background=''; this.style.color='#9ca3af';">
+     ✅ Approved Orders
+  </a>
+</div>
+
+
+
+  <!-- Main content -->
+  <div style="flex:1; padding:30px; overflow-y:auto;">
+
+        <!-- Dashboard Section -->
+    <div id="dashboard" class="section" style="display: block;">
+    <h2 style="font-size: 28px; margin-bottom: 24px; color: #111827;">📦 My Dashboard</h2>
+
+   <!-- Swiper Slideshow for Stock Cards -->
+  {% if approved_orders %}
+  <div class="swiper" style="width: 100%; padding: 20px 0;">
+    <div class="swiper-wrapper">
+      {% for o in approved_orders %}
+      <div class="swiper-slide" style="background: linear-gradient(135deg, #f0fdf4, #d1fae5); border-radius: 20px; padding: 24px; box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06); text-align: center; transition: transform 0.3s; display: flex; flex-direction: column; align-items: center;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🧶</div>
+        <div style="font-size: 18px; color: #047857; font-weight: 600; margin-bottom: 6px;">{{ o.name }}</div>
+        <div style="font-size: 24px; font-weight: bold; color: #065f46;">{{ o.quantity }} in stock</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="swiper-pagination" style="margin-top: 16px;"></div>
+  </div>
+  {% else %}
+  <p style="color: #6b7280; font-size: 16px;">No stock yet. Once your orders are approved, your inventory will show here 🗂️.</p>
+  {% endif %}
+
+  <!-- Chart Section -->
+  {% if approved_orders %}
+  <div style="margin-top: 40px; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+    <h3 style="font-size: 20px; color: #374151; font-weight: 600; margin-bottom: 20px;">📈 Stock Distribution</h3>
+    <canvas id="stockChart" height="120" style="width:100%;"></canvas>
+  </div>
+  {% endif %}
+
+    </div>
+
+
+    <!-- Place Order -->
+<div id="placeOrder" class="section" style="display:block;">
+  <h2 style="margin-bottom: 24px; color: #111827;">📝 Place Order</h2>
+
+  <!-- Inside your placeOrder div -->
+{% if stock %}
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+  {% for s in stock %}
+  <form method="POST" style="background:white; border-radius:16px; padding:20px; width:240px; box-shadow:0 8px 20px rgba(0,0,0,0.05); transition:transform 0.2s ease; text-align:center;"
+        data-stock="{{ s.stock  }}">
+    <div style="font-size:28px; margin-bottom:10px;">🧶</div>
+    <h3 style="font-size:16px; font-weight:600; color:#111827; margin-bottom:4px;">{{ s.name }}</h3>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:8px;">Material: {{ s.material }}</p>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:16px;">Available: <strong>{{ s.stock }}</strong> units</p>
+
+    <input type="hidden" name="blanket_id" value="{{ s.blanket_id }}">
+
+    <input type="number" name="quantity" min="1" placeholder="Quantity" required
+           style="padding:10px; width:100%; border-radius:8px; border:1px solid #d1d5db; margin-bottom:12px;"/>
+
+    <button type="submit"
+            style="padding:10px; background:#10b981; color:white; border:none; border-radius:8px; width:100%; font-weight:600; cursor:pointer; transition: background 0.2s;">
+      ➕ Place Order
+    </button>
+  </form>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color:#6b7280;">No blankets available to order right now 💤.</p>
+{% endif %}
+
+</div>
+
+
+  <!-- My Orders -->
+<div id="myOrders" class="section" style="display:none;">
+  <h2 style="margin-bottom:24px; color:#111827; font-weight:700; font-size:28px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">📋 My Orders</h2>
+
+  {% if orders %}
+  <button onclick="exportTableToCSV('my_orders.csv')"
+          style="margin-bottom:24px; padding:12px 20px; background: linear-gradient(135deg, #34d399 0%, #059669 100%); 
+                 border:none; border-radius:12px; color:#fff; font-weight:700; font-size:16px; cursor:pointer;
+                 box-shadow: 0 6px 12px rgba(5, 150, 105, 0.4); transition: background 0.3s ease;">
+    Export as CSV
+  </button>
+
+  <div style="overflow-x:auto; border-radius:18px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); background:#fff;">
+    <table style="width:100%; border-collapse: separate; border-spacing: 0 12px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <thead>
+        <tr style="background:#10b981; border-radius: 12px;">
+          <th style="padding:16px 24px; color:#ffffff; text-align:left; font-weight:700; font-size:18px; border-top-left-radius: 12px;">Product</th>
+          <th style="padding:16px 24px; color:#ffffff; text-align:center; font-weight:700; font-size:18px;">Quantity</th>
+          <th style="padding:16px 24px; color:#ffffff; text-align:center; font-weight:700; font-size:18px; border-top-right-radius: 12px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr style="background:#f9fafb; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 12px; transition: background 0.25s ease; cursor:pointer;">
+          <td style="padding:20px 24px; font-weight:600; color:#111827; border-radius: 12px 0 0 12px;">{{ o.name }}</td>
+          <td style="padding:20px 24px; text-align:center; font-weight:700; color:#059669;">{{ o.quantity }}</td>
+          <td style="padding:20px 24px; text-align:center; font-style: italic; color: #6b7280; border-radius: 0 12px 12px 0;">{{ o.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="color:#6b7280; font-size:18px;">No orders found.</p>
+  {% endif %}
+</div>
+
+
+
+<!-- Approved Orders -->
+<div id="approvedOrders" class="section" style="display:none;">
+  <h2 style="margin-bottom:24px; color:#2f4f2f; font-weight:700; font-size:28px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    ✅ Approved Order History
+  </h2>
+
+  {% if approved_orders %}
+  <!-- Export Buttons -->
+  <div style="margin-bottom:16px; display:flex; gap:12px;">
+    <button onclick="exportTableToCSV('approved_orders.csv')" 
+            style="padding:10px 20px; border:none; background:#22c55e; color:white; border-radius:10px; font-weight:600; cursor:pointer; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); transition: background 0.3s;">
+      Export CSV
+    </button>
+    <button onclick="exportTableToText()" 
+            style="padding:10px 20px; border:none; background:#10b981; color:white; border-radius:10px; font-weight:600; cursor:pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); transition: background 0.3s;">
+      Export Text
+    </button>
+  </div>
+
+  <div style="overflow-x:auto; border-radius:18px; box-shadow: 0 8px 24px rgba(72, 121, 84, 0.15); background:#f0fff4;">
+    <table id="approvedOrdersTable" style="width:100%; border-collapse: separate; border-spacing: 0 14px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <thead>
+        <tr style="background:#bbf7d0; border-radius: 12px;">
+          <th style="padding:16px 24px; color:#166534; text-align:left; font-weight:700; font-size:18px; border-top-left-radius: 12px;">
+            Product
+          </th>
+          <th style="padding:16px 24px; color:#166534; text-align:center; font-weight:700; font-size:18px;">
+            Quantity
+          </th>
+          <th style="padding:16px 24px; color:#166534; text-align:center; font-weight:700; font-size:18px; border-top-right-radius: 12px;">
+            Status
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in approved_orders %}
+        <tr style="background:#dcfce7; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.12); border-radius: 12px; transition: background 0.25s ease; cursor:pointer;">
+          <td style="padding:20px 24px; font-weight:600; color:#15803d; border-radius: 12px 0 0 12px;">
+            {{ o.name }}
+          </td>
+          <td style="padding:20px 24px; text-align:center; font-weight:700; color:#22c55e;">
+            {{ o.quantity }}
+          </td>
+          <td style="padding:20px 24px; text-align:center; font-style: italic; color:#4ade80; border-radius: 0 12px 12px 0;">
+            {{ o.status }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="color:#6b7280; font-size:18px;">No approved orders yet.</p>
+  {% endif %}
+</div>
+
+
+
+
+  </div>
+
+  <script>
+    function showSection(id) {
+      const sections = document.querySelectorAll(".section");
+      const links = document.querySelectorAll(".nav-link");
+      sections.forEach((sec) => (sec.style.display = "none"));
+      links.forEach((link) => link.classList.remove("active"));
+      document.getElementById(id).style.display = "block";
+      event.target.classList.add("active");
+    }
+
+     const swiper = new Swiper(".swiper", {
+    slidesPerView: 1,
+    spaceBetween: 20,
+    pagination: { el: ".swiper-pagination" },
+    breakpoints: {
+      640: { slidesPerView: 2 },
+      1024: { slidesPerView: 3 }
+    }
+  });
+
+  {% if approved_orders %}
+  const ctx = document.getElementById('stockChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [{% for o in approved_orders %}'{{ o.name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+      datasets: [{
+        label: 'Stock Quantity',
+        data: [{% for o in approved_orders %}{{ o.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: '#10b981',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+  {% endif %}
+
+
+  function exportTableToCSV(filename) {
+  const rows = document.querySelectorAll("#myOrders table tr");
+  const csv = [];
+  rows.forEach(row => {
+    const cols = row.querySelectorAll("th, td");
+    const rowData = [];
+    cols.forEach(col => {
+      // Escape commas and quotes
+      let data = col.innerText.replace(/"/g, '""');
+      if (data.indexOf(",") >= 0 || data.indexOf('"') >= 0) {
+        data = `"${data}"`;
+      }
+      rowData.push(data);
+    });
+    csv.push(rowData.join(","));
+  });
+  const csvString = csv.join("\n");
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+
+ // Export table to CSV
+  function exportTableToCSV(filename) {
+    const csv = [];
+    const rows = document.querySelectorAll("#approvedOrdersTable tr");
+    for (let row of rows) {
+      const cols = row.querySelectorAll("th, td");
+      const rowData = [];
+      for (let col of cols) {
+        // Escape commas, quotes, and line breaks in data
+        let data = col.innerText.replace(/"/g, '""');
+        if (data.includes(',') || data.includes('"') || data.includes('\n')) {
+          data = `"${data}"`;
+        }
+        rowData.push(data);
+      }
+      csv.push(rowData.join(","));
+    }
+    downloadFile(csv.join("\n"), filename, "text/csv");
+  }
+
+  // Export table to plain text
+  function exportTableToText() {
+    const rows = document.querySelectorAll("#approvedOrdersTable tr");
+    let text = "";
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("th, td");
+      const rowText = [];
+      cols.forEach(col => {
+        rowText.push(col.innerText.trim());
+      });
+      text += rowText.join("\t") + "\n";
+    });
+    downloadFile(text, "approved_orders.txt", "text/plain");
+  }
+
+  // Helper to download file
+  function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], {type: mimeType});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+
+  // Validate quantity on all place order forms
+document.querySelectorAll('#placeOrder form').forEach(form => {
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const stock = parseInt(form.dataset.stock, 10);
+    const quantityInput = form.querySelector('input[name="quantity"]');
+    const quantity = parseInt(quantityInput.value, 10);
+
+    if (quantity > stock) {
+      alert(`Sorry, only ${stock} item${stock > 1 ? 's' : ''} available.`);
+      quantityInput.focus();
+      return false;
+    }
+
+    // If validation passes, submit the form normally
+    form.submit();
+  });
+});
+
+  </script>
+
+</body>
+</html>
